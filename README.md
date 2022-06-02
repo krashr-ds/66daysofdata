@@ -14,7 +14,7 @@ Kaggle https://www.kaggle.com/
 
 Khan Academy https://www.khanacademy.org/
 
-Starmer, S. (2022).  The StatQuest Illustrated Guide to Machine Learning!!! Chapel Hill: Joshua Starmer.
+Starmer, J. (2022).  The StatQuest Illustrated Guide to Machine Learning!!! Chapel Hill: Joshua Starmer.
 
 Vinod, H.D. (2011).  Hands-On Matrix Algebra Using R, Active and Motivated Learning with Applications.  Hackensack: World Scientific.
 
