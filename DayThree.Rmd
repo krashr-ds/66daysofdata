@@ -1,0 +1,185 @@
+---
+title: 'R Notebook: #66daysof(health)data - Day Three'
+subtitle: Measures of Central Tendency, Power, Confidence Intervals & doing Hypothesis Testing using the Cleveland Heart Attack Data
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+
+# Read in Heart Attacks data set
+heart <- read_csv(
+  "Data/heart.csv", 
+  col_types = list(
+    age = col_integer(),
+    sex = col_number(),
+    cp = col_number(),
+    trtbps = col_integer(),
+    chol = col_integer(),
+    fbs = col_logical(),
+    restecg = col_number(),
+    thalachh = col_integer(),
+    exng = col_logical(),
+    oldpeak = col_double(),
+    slp = col_number(),
+    caa = col_integer(),
+    thall = col_number(),
+    output = col_logical()
+  )
+)
+
+spec(heart)
+```
+```{r}
+head(heart, 10)
+```
+
+```{r}
+# Recode Factors 
+
+heart$sex <- as.factor(heart$sex)
+levels(heart$sex) <- c('FEMALE', 'MALE')
+
+heart$cp <- factor(heart$cp, levels=c('3', '2', '1', '0'))
+levels(heart$cp) <- c('ASYMPT', 'NON-ANG PAIN', 'ATYP ANG', 'TYP ANG')
+
+heart$restecg <- as.factor(heart$restecg)
+levels(heart$restecg) <- c('NORM', 'ABN ST-T', 'LVH')
+
+heart$slp <- factor(heart$slp, levels=c('1', '2', '0'))
+levels(heart$slp) <- c('FLAT', 'DOWNSLP', 'UPSLP')
+
+# Can't translate this one because I can't find a data dictionary that shows what these codes (0-3) mean
+heart$thall <- as.factor(heart$thall)
+head(heart, 10)
+
+```
+
+```{r}
+# Measures of Central Tendency
+
+summary(heart)
+```
+```{r}
+
+nrow(heart)
+```
+
+Yesterday, we calculated power and did hypothesis testing using Pearson's R correlation and two-sample t-testing.  
+
+Today, let's shift gears a bit, and move in another direction.  Let's do some categorical analysis with Chi-Sq and CMH testing!
+
+First, let's try a Chi-Sq test to see if there may be a difference in correlation between people with exercise-induced angina (exng) and coronary artery disease (output).  This will give us a preliminary outcome, we can use to calculate power.
+
+```{r}
+# A preliminary plot, to get a look at the data
+
+ggplot(heart) +
+  aes(x = exng, fill = output) +
+  geom_bar(position = "fill")
+
+
+```
+It looks like the relationship between exercise-induced angina and vessel narrowing isn't what I expected.
+
+```{r}
+# Create a table with the needed variables.
+heart.data = table(heart$exng, heart$output) 
+print(heart.data)
+
+# Perform the Chi-Square test.
+print(chisq.test(heart.data))
+
+# Calculate the critical value.
+qchisq(0.05, 1)
+
+```
+
+On the left side of the table, we have Exercise-Induced Angina T/F, and on the top of the table, we have Coronary Artery Disease, T/F.  
+
+Of those without exercise-induced angina, 70% had coronary artery disease!  Of those with exercise-induced angina, only 23% had coronary artery disease.  So, while there appears to be a significant effect size (55.95, which is above the critical value of 0.004) and p-value <.0001, the direction of the relationship isn't what I would have expected.
+
+Now, let's calculate the power, with 1 df:
+
+
+```{r}
+library(pwr)
+
+pwr.chisq.test(w=0.2, N=303, df=1, sig.level=0.05)
+```
+Having 303 rows, we can detect a small (0.2) effect size with 93.6% power at alpha=0.05.
+
+```{r}
+library(pwr)
+
+pwr.chisq.test(w=0.2, df=1, power=0.80, sig.level=0.05)
+```
+To achieve 80% power and detect a small effect (0.2), we need at least 197 samples.
+
+Now, let's apply The Cochran-Mantel-Haenszel test by performing the same chi-sq test again, but breaking down the results by sex.
+
+H0: There is NO significant three way interaction between exercise-induced angina, coronary artery disease and sex.
+
+H1: There IS a significant three way interaction between exercise-induced angina, coronary artery disease and sex. Exercise-induced angina and coronary artery disease are not independent within each level of sex.
+
+```{r}
+
+ggplot(heart) +
+  aes(x = exng, fill = output) +
+  geom_bar(position = "fill") + 
+  facet_wrap(~sex)
+
+```
+Surprisingly, it looks like females were more likely to have CVD overall (OUTPUT=TRUE), but those without exercise-induced angina were *much* more likely to have CVD than males without the same!
+
+```{r}
+library(vcd)
+library(rcompanion)
+
+heart.table <- table(heart$exng, heart$output, heart$sex)
+heart.table
+
+heart.cmh <- mantelhaen.test(heart$exng,heart$output,heart$sex, alternative = 'two.sided')
+heart.cmh
+
+woolf_test(heart.table)
+
+# post-Hoc
+groupwiseCMH(heart.table,
+             group   = 3,
+             fisher  = TRUE,
+             gtest   = FALSE,
+             chisq   = FALSE,
+             method  = "fdr",
+             correct = "none",
+             digits  = 3)
+
+```
+
+
+Proportionally fewer men than women had corornary disease at all in this sample (output=TRUE)!
+Chi-squared = 44.98, Common odds ratio = 0.141, p-value = <.0001
+
+The effect size (Chi-squared) is smaller here than in the previous chi-sq test, and the common odds ratio is the weighted average of the stratum-specific estimates.  This has the effect of controlling the effect size and OR magnitude of the relationship between exercise-induced angina and CVD for the confounding effect of sex.  
+
+Recall OR = ad/bc where a b c d are the cells in a 2x2 frequency table - 
+
+So in the original (unadjusted) table, the odds ratio of exercise-induced angina to CVD would have been:
+
+   OR = 62*23/142*76, or 0.132135
+   
+Since the odds ratio is < 1, the odds of CVD are 0.132 times LOWER given exercise-induced angina, compared to no exercise-induced angina.
+
+The CMH adjusted OR is 0.141, so once we remove the confounding influence of sex, the odds of CVD are 0.141 times LOWER given exercise-induced angina, compared to no-exercise-induced angina.
+
+The 95% confidence interval for the CMH-adjusted OR indicates that we can be 95% confident that the reduction in CVD given exercise-induced angina is between 0.07945121 and 0.24929225 times.  
+
+The Woolf-test indicates the two data sets are comparable.
+
+The CMH result indicates that there is a significant difference in association between exercise-induced angina and cardiovascular disease (vessel narrowing) when data are stratified by sex.  The post-Hoc test uses Fisher's Exact Test to demonstrate that p-values are significant for relationship between given and expected counts of exercise-induced angina x CVD for both females and males, but even more significant for males.
+
+
+
+
