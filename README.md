@@ -10,9 +10,13 @@ https://docs.google.com/document/d/1TVp-h-6DXDeFX1da2Gbjz1jBHEI0iKK9_xuiTT_aY-w/
 
 Resources: 
 
+Datacamp https://www.datacamp.com/
+
 Kaggle https://www.kaggle.com/
 
 Khan Academy https://www.khanacademy.org/
+
+Needham, M. & Hodler, A. E. (2019).  Graph Algorithms, Practical Examples in Apache Spark & Neo4j.  Sebastopol: O'Reilly.
 
 Starmer, J. (2022).  The StatQuest Illustrated Guide to Machine Learning!!! Chapel Hill: Joshua Starmer.
 
