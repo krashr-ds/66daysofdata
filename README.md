@@ -1,6 +1,6 @@
 \#66daysofhealthdata
 
-Notebooks and code from 66 Days of (Health) Data Challenge
+Notebooks and code from 66 Days of Data Challenge
 
 Big thanks for inspiration from Ken Jee and Josh Starmer (BAM). 
 
