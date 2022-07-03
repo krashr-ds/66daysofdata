@@ -17,3 +17,4 @@ mnist/MNIST/raw/train-labels-idx1-ubyte.gz
 .ipynb_checkpoints/Day 20 - 22 Python Workouts for Optimization-checkpoint.ipynb
 __pycache__/bmifuncs.cpython-38.pyc
 *.pyc
+.ipynb_checkpoints/Day 23 OOP with Python I-checkpoint.ipynb
