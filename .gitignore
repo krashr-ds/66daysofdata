@@ -18,3 +18,5 @@ mnist/MNIST/raw/train-labels-idx1-ubyte.gz
 __pycache__/bmifuncs.cpython-38.pyc
 *.pyc
 .ipynb_checkpoints/Day 23 OOP with Python I-checkpoint.ipynb
+.ipynb_checkpoints/Day 26 Mastering OO Python I-checkpoint.ipynb
+.ipynb_checkpoints/Day 24 & 25 OOP with Python II-checkpoint.ipynb
